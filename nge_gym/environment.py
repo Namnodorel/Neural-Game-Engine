@@ -7,7 +7,7 @@ from training.environment.subprocenv.util import tile_images
 
 class NeuralGameEngineGym(gym.Env):
 
-    def __init__(self, model=None, steps=1, initial_observation=np.zeros(1), sprite_size=10, num_actions=0, action_mapping=None,
+    def __init__(self, model=None, steps=1, initial_observation=np.zeros(1), sprite_size=1, num_actions=0, action_mapping=None,
                  device='cpu', trace=False):
 
         self._model = model

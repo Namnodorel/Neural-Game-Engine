@@ -4,7 +4,7 @@ from datetime import datetime
 
 from torch.utils.tensorboard import SummaryWriter
 
-from training.environment.gvgai_data_generator import get_game_levels, GVGAIRandomGenerator, GVGAILevelDataGenerator
+from training.environment.moonlander_data_generator import MoonlanderDataGenerator
 from training.nge_trainer import GymLearner
 from validation.checkpoint_validator import CallBackValidator
 
@@ -12,7 +12,6 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-G', '--game', required=True, help="The game to learn")
     parser.add_argument('-i', '--iterations', type=int, default=2, help='Number of NGPU steps per frame')
     parser.add_argument('-l', '--learning-rate', type=float, default=0.01, help='The learning rate')
     parser.add_argument('-e', '--epochs', default=5000, type=int, help='The number of epochs to train for')
@@ -23,7 +22,6 @@ if __name__ == '__main__':
 
     ngpu_iterations = args.iterations
     learning_rate = args.learning_rate
-    game_name = args.game
     epochs = args.epochs
 
     validation_repeats = args.validation_repeats
@@ -61,13 +59,10 @@ if __name__ == '__main__':
 
     summary_writer = SummaryWriter(f'./tensorboard/data/{now.strftime("%Y%m%d-%H%M%S")}', flush_secs=5)
 
-    original_levels = get_game_levels(game_name)
+    data_generator = MoonlanderDataGenerator()
+    # initial_state_generator = GVGAILevelDataGenerator(original_levels)
 
-    data_generator = GVGAIRandomGenerator(game_name, generate_symmetries=False)
-    initial_state_generator = GVGAILevelDataGenerator(original_levels)
-
-    gym_learner = GymLearner(hyperparameters, data_generator, initial_state_generator=initial_state_generator,
-                             summary_writer=summary_writer)
+    gym_learner = GymLearner(hyperparameters, data_generator, summary_writer=summary_writer)
 
     # Create nge_gym environments for trained model
     ngpu_iterations = hyperparameters['ngpu_iterations']
@@ -75,19 +70,20 @@ if __name__ == '__main__':
     validation_steps = hyperparameters['validation_steps']
     validation_repeats = hyperparameters['validation_repeats']
 
-    callback_validator = CallBackValidator(validation_repeats, validation_steps, ngpu_iterations, original_levels)
+    # callback_validator = CallBackValidator(
+    #     validation_repeats,
+    #    validation_steps,
+    #    ngpu_iterations,
+    #     level_generator=data_generator
+    # )
 
     experiment, _ = gym_learner.train(
         epochs,
         callback_epoch=200,
-        checkpoint_callback=callback_validator.get_callback(gym_learner, summary_writer)
+        # checkpoint_callback=callback_validator.get_callback(gym_learner, summary_writer)
     )
 
     # Save the training and
-    history_files = callback_validator.save_history()
-    experiment.add_files([{'filename': f} for f in history_files])
+    # history_files = callback_validator.save_history()
+    # experiment.add_files([{'filename': f} for f in history_files])
 
-    # Have to make sure GVGAI stops
-    callback_validator.cleanup()
-    data_generator.cleanup()
-    initial_state_generator.cleanup()

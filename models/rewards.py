@@ -4,11 +4,11 @@ import torch.nn.functional as F
 
 class PoolingRewardDecoder(nn.Module):
 
-    def __init__(self, num_actions, state_channels):
+    def __init__(self, num_actions, state_channels, tile_size):
         super().__init__()
 
         self._observation_encoder = nn.Sequential(
-            nn.Conv2d(3, state_channels, kernel_size=10, stride=10),
+            nn.Conv2d(3, state_channels, kernel_size=tile_size, stride=tile_size),
             nn.ReLU(),
             nn.BatchNorm2d(state_channels)
         )

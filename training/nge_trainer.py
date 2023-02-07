@@ -42,12 +42,14 @@ class GymLearner(Trainable):
         self._iterations = hyperparameters['ngpu_iterations']
 
         self._num_actions = data_generator.get_num_actions()
+        self._tile_size = data_generator.get_tile_size()
         self._initial_state_generator = initial_state_generator
 
         self._model = NeuralGameEngine(
             self._state_channels,
             self._reward_state_channels,
             self._num_actions,
+            self._tile_size,
             observation_noise_std=self._observation_noise_std,
             saturation_limit=self._saturation_limit,
             trace_handler=trace_handler,
@@ -264,7 +266,7 @@ class GymLearner(Trainable):
             **self._hyperparameters,
 
             'data_generator': self._data_generator.get_name(),
-            'action_map': self._data_generator.get_action_mapping(),
+            # 'action_map': self._data_generator.get_action_mapping(),
             **self._data_generator.get_generator_params(),
 
             **train_final_values,

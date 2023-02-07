@@ -5,13 +5,12 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 
-from training.environment.gvgai_data_generator import GVGAILevelDataGenerator
 from validation.prediction_accuracy import PredictionAccuracyMeasure
 
 
 class CallBackValidator():
 
-    def __init__(self, validation_repeats, validation_steps, ngpu_iterations, levels, level_generator=None):
+    def __init__(self, validation_repeats, validation_steps, ngpu_iterations, levels, level_generator):
         self._levels = levels
 
         self._history = defaultdict(lambda: defaultdict(lambda: []))
@@ -20,7 +19,7 @@ class CallBackValidator():
         self._steps = validation_steps
         self._ngpu_iterations = ngpu_iterations
 
-        self._level_generator = level_generator if level_generator is not None else GVGAILevelDataGenerator(self._levels)
+        self._level_generator = level_generator
 
     def __del__(self):
         self.cleanup()
